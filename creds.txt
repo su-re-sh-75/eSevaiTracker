@@ -1,0 +1,6 @@
+users:
+    username, password = phonenum
+    9342222369
+    
+superusers:
+    9092296466, admin123
