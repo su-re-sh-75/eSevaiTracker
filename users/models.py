@@ -36,7 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 # Docs Model
 class Document(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='docs')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='documents')
     aadhaar_num = models.CharField(max_length=20, blank=True, null=True)
     pan_num = models.CharField(max_length=20, blank=True, null=True)
     voter_id = models.CharField(max_length=20, blank=True, null=True)
