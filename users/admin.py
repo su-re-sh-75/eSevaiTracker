@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Docs
+from .models import User, Document
 
 class UserAdmin(BaseUserAdmin):
     ordering = ['id']
@@ -23,7 +23,7 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(User, UserAdmin)
 
-@admin.register(Docs)
-class DocsAdmin(admin.ModelAdmin):
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
     list_display = ['user', 'aadhaar_num', 'pan_num', 'voter_id']
     search_fields = ['user__phone_num', 'aadhaar_num', 'pan_num', 'voter_id']

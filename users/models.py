@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 # Custom manager
 class CustomUserManager(BaseUserManager):
-    def create_user(self, phone_num, name=None, password=None):
+    def create_user(self, phone_num, password, name=None):
         if not phone_num:
             raise ValueError("Users must have a phone number")
         user = self.model(phone_num=phone_num, name=name)
@@ -11,7 +11,7 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, phone_num, name=None, password=None):
+    def create_superuser(self, phone_num, password, name=None):
         user = self.create_user(phone_num=phone_num, name=name, password=password)
         user.is_superuser = True
         user.is_staff = True
@@ -24,6 +24,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=100, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'phone_num'
     REQUIRED_FIELDS = []
@@ -34,8 +35,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.phone_num
 
 # Docs Model
-class Docs(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+class Document(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='docs')
     aadhaar_num = models.CharField(max_length=20, blank=True, null=True)
     pan_num = models.CharField(max_length=20, blank=True, null=True)
     voter_id = models.CharField(max_length=20, blank=True, null=True)
@@ -47,4 +48,4 @@ class Docs(models.Model):
     ration_card_file = models.FileField(upload_to='docs/ration_card/', blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.phone_num}'s Docs"
+        return f"{self.user.phone_num}'s Documents"

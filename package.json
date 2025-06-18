@@ -14,5 +14,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@iconify/json": "^2.2.350",
+    "@iconify/tailwind4": "^1.0.6"
+  }
 }
