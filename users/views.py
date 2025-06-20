@@ -17,11 +17,11 @@ def login_view(request):
             if user_type == 'customer' and not user.is_staff:
                 login(request, user)
                 messages.success(request, 'Customer login success!', 'info')
-                return HttpResponse("Customer login success")
+                return redirect('/dashboard/')
             elif user_type == 'staff' and user.is_staff:
                 login(request, user)
                 messages.success(request, 'Staff login success!', 'info')
-                return HttpResponse("Staff login success")
+                return redirect('/staff/dashboard/')
             else:
                 messages.error(request, 'User type mismatch.', 'error')
         else:
@@ -46,8 +46,11 @@ def signup_view(request):
             user.save()
             login(request, user)
             messages.success(request, f'{user_type.capitalize()} account created successfully!', 'info')
-            return HttpResponse(f"{user_type.capitalize()} account created successfully!")
-
+            if user.is_staff:
+                return redirect('/staff/dashboard/')
+            else:
+                return redirect('/dashboard/')
+            
     return render(request, 'users/signup.html')
 
 
