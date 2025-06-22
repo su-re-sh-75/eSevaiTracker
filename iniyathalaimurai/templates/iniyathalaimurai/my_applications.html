@@ -1,267 +1,97 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | Iniya Thalaimurai</title>
-    <link rel="stylesheet" href="{% static 'src/output.css' %}">
-</head>
-<body class="flex flex-col min-h-screen w-full">
-    <!-- navbar -->
-    <nav class="navbar bg-base-100 max-sm:rounded max-sm:shadow-sm sm:border-b border-base-content/25 z-10 h-16 sticky top-0">
-        <button type="button" class="btn btn-text max-sm:btn-square sm:hidden me-2" aria-haspopup="dialog" aria-expanded="false" aria-controls="with-navbar-sidebar" data-overlay="#with-navbar-sidebar" >
-            <span class="icon-[tabler--menu-2] size-5"></span>
-        </button>
-        <div class="navbar-start flex flex-1 items-center">
-            <a class="link text-base-content link-neutral text-xl font-bold no-underline flex items-center gap-2" href="#">
-                <img src="{% static 'iniyathalaimurai/esevai logo.png' %}" alt="esevai logo" class="size-8">
-                <p>Iniya Thalaimurai</p>
-            </a>
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Applications | Iniya Thalaimurai{% endblock %}
+
+{% block content %}
+    <!-- All Applications of this user -->
+    <div class="text-base-content p-5 text-left text-lg font-semibold rtl:text-right">
+        <p>My Applications</p>
+    </div>
+
+    <!-- Table Container -->
+    <div class="w-full rounded-lg pb-2 shadow-md">
+        <div class="overflow-x-auto">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Application ID</th>
+                        <th>Service Name</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Applied At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appln in page_obj %}
+                        <tr>
+                            <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                            <td>{{ appln.applicationID }}</td>
+                            <td>{{ appln.service.category }} - {{ appln.service.name }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if appln.status == 'processing' %} badge-warning 
+                                    {% elif appln.status == 'accepted' %} badge-success 
+                                    {% elif appln.status == 'rejected' %} badge-error 
+                                    {% endif %}">
+                                    {{ appln.status|capfirst }}
+                                </span>
+                            </td>
+                            <td>{{ appln.payment.amount }}</td>
+                            <td>
+                                {{ appln.userAppliedAt|date:"d-m-Y" }}
+                                {{ appln.userAppliedAt|time:"h:i A" }}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-sm text-gray-500 py-6">No applications found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        <div class="navbar-end flex items-center gap-4">
-            <div class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]">
-            <button id="dropdown-scrollable" type="button" class="dropdown-toggle flex items-center" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-                <div class="avatar">
-                    <div class="size-9.5 rounded-full mx-2">
-                        <img src="{% static 'iniyathalaimurai/pfp.png' %}" alt="user avatar" />
-                    </div>
-                </div>
-                <div class="flex items-center flex-col justify-center">
-                    <p class="text-base-content">
-                        {% if request.user.name %}
-                            {{ request.user.name }}
-                        {% else %}
-                            {{ request.user.phone_num }}
-                        {% endif %}
-                    </p>
-                    <small class="text-base-content/50">
-                        {% if request.user.is_staff %}
-                            Admin
-                        {% else %}
-                            Customer
-                        {% endif %}
-                    </small>
-                </div>
-            </button>
-            <ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-avatar">
-                <li class="dropdown-header gap-2">
-                <div>
-                    <p class="text-base-content text-base font-semibold">{{ request.user.name }}</p>
-                </div>
-                </li>
-                <li>
-                <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--user]"></span>
-                    My Profile
-                </a>
-                </li>
-                <li>
-                <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--settings]"></span>
-                    Settings
-                </a>
-                </li>
-                <li>
-                <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--receipt-rupee]"></span>
-                    Billing
-                </a>
-                </li>
-                <li>
-                <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--help-triangle]"></span>
-                    FAQs
-                </a>
-                </li>
-                <li class="dropdown-footer gap-2">
-                <a class="btn btn-error btn-soft btn-block" href="{% url 'users:logout' %}">
-                    <span class="icon-[tabler--logout]"></span>
-                    Sign out
-                </a>
-                </li>
-            </ul>
-            </div>
-        </div>
-    </nav>
-    <!-- main content layout -->
-    <div class="flex flex-1">
-        <!-- sidebar -->
-        <aside id="with-navbar-sidebar" class="w-72 bg-base-100 sm:h-[calc(100vh-4rem)] sm:sticky sm:top-[4rem] hidden sm:flex flex-col overlay [--auto-close:sm] sm:shadow-none overlay-open:translate-x-0 drawer sm:pt-0 pt-4 drawer-start sm:translate-x-0 sm:border-r border-base-content/25" role="dialog" tabindex="-1" >
-            <div class="drawer-body px-2 py-2">
-                <ul class="menu space-y-0.5 p-0">
-                    <li>
-                        <a href="{% url 'iniyathalaimurai:user_dashboard' %}" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--home] size-5"></span>
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="space-y-0.5">
-                        <a class="collapse-toggle collapse-open:text-bg-soft-primary hover:text-bg-soft-primary" id="menu-app" data-collapse="#menu-app-collapse">
-                            <span class="icon-[tabler--apps] size-5"></span>
-                            New Application
-                            <span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"></span>
-                        </a>
-                        <ul id="menu-app-collapse" class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300" aria-labelledby="menu-app" >
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-a] size-5"></span>
-                                Aadhaar Card
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-p] size-5"></span>
-                                PAN Card
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-r] size-5"></span>
-                                Ration Card
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-d] size-5"></span>
-                                Driving Licence
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-v] size-5"></span>
-                                Voter ID
-                            </a>
-                        </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--currency-rupee] size-5"></span>
-                            New Payment
-                        </a>
-                    </li>
-                    <div class="divider text-base-content/50 m-0 py-6">View</div>
-                    <li>
-                        <a href="{% url 'iniyathalaimurai:user_applications' %}" class="hover:text-bg-soft-primary">
-                        <span class="icon-[tabler--file-check] size-5"></span>
-                            My Applications
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'iniyathalaimurai:user_payments' %}" class="hover:text-bg-soft-primary">
-                        <span class="icon-[tabler--receipt-rupee] size-5"></span>
-                            My Payments
-                        </a>
-                    </li>
-                    <div class="divider text-base-content/50 m-0 py-6">Account</div>
-                    <li>
-                        <a href="#" class="hover:text-bg-soft-primary">
-                        <span class="icon-[tabler--user] size-5"></span>
-                            My Profile
-                        </a>
-                    </li>
-                    </ul>
-            </div>
-            </aside>
+    </div>
 
-            <!-- page content -->
-            <main class="flex-1 w-full p-4">
-                <!-- All Applications of this user -->
-                <div class="text-base-content p-5 text-left text-lg font-semibold rtl:text-right">
-                    <p>My Applications</p>
-                </div>
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="mt-6 flex justify-center items-center flex-wrap gap-4">
 
-                <!-- Table Container -->
-                <div class="w-full rounded-lg pb-2 shadow-md">
-                    <div class="overflow-x-auto">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Application ID</th>
-                                    <th>Service Name</th>
-                                    <th>Status</th>
-                                    <th>Amount</th>
-                                    <th>Applied At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for appln in page_obj %}
-                                    <tr>
-                                        <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
-                                        <td>{{ appln.applicationID }}</td>
-                                        <td>{{ appln.service.category }} - {{ appln.service.name }}</td>
-                                        <td>
-                                            <span class="badge 
-                                                {% if appln.status == 'processing' %} badge-warning 
-                                                {% elif appln.status == 'accepted' %} badge-success 
-                                                {% elif appln.status == 'rejected' %} badge-error 
-                                                {% endif %}">
-                                                {{ appln.status|capfirst }}
-                                            </span>
-                                        </td>
-                                        <td>{{ appln.payment.amount }}</td>
-                                        <td>
-                                            {{ appln.userAppliedAt|date:"d-m-Y" }}
-                                            {{ appln.userAppliedAt|time:"h:i A" }}
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="6" class="text-center text-sm text-gray-500 py-6">No applications found.</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Pagination -->
-                {% if page_obj.has_other_pages %}
-                <div class="mt-6 flex justify-center items-center flex-wrap gap-4">
-
-                    <!-- Prev button -->
-                    {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" type="button" class="btn btn-text max-sm:btn-square hover:text-bg-soft-primary">
-                        <span class="icon-[tabler--chevron-left] size-5 rtl:rotate-180"></span>
-                        <span class="hidden sm:inline">Previous</span>
+        <!-- Prev button -->
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" type="button" class="btn btn-text max-sm:btn-square hover:text-bg-soft-primary">
+            <span class="icon-[tabler--chevron-left] size-5 rtl:rotate-180"></span>
+            <span class="hidden sm:inline">Previous</span>
+        </a>
+        {% else %}
+        <span class="btn btn-text max-sm:btn-square btn-disabled">
+            <span class="icon-[tabler--chevron-left] size-5 rtl:rotate-180"></span>
+            <span class="hidden sm:inline">Previous</span>
+        </span>
+        {% endif %}
+        
+        <div class="flex items-center gap-x-1">
+            {% for page_num in page_obj.paginator.page_range %}
+                {% if page_num >= page_obj.number|add:'-2' and page_num <= page_obj.number|add:'2' %}
+                    <a href="?page={{ page_num }}"
+                        class="btn btn-soft btn-square aria-[current='page']:text-bg-soft-primary"  {% if page_obj.number == page_num %} aria-current="page" {% endif %}>
+                        {{ page_num }}
                     </a>
-                    {% else %}
-                    <span class="btn btn-text max-sm:btn-square btn-disabled">
-                        <span class="icon-[tabler--chevron-left] size-5 rtl:rotate-180"></span>
-                        <span class="hidden sm:inline">Previous</span>
-                    </span>
-                    {% endif %}
-                    
-                    <div class="flex items-center gap-x-1">
-                        {% for page_num in page_obj.paginator.page_range %}
-                            {% if page_num >= page_obj.number|add:'-2' and page_num <= page_obj.number|add:'2' %}
-                                <a href="?page={{ page_num }}"
-                                    class="btn btn-soft btn-square aria-[current='page']:text-bg-soft-primary"  {% if page_obj.number == page_num %} aria-current="page" {% endif %}>
-                                    {{ page_num }}
-                                </a>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-
-                    <!-- Next button -->
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}" type="button" class="btn btn-text hover:text-bg-soft-primary max-sm:btn-square">
-                            <span class="hidden sm:inline">Next</span>
-                            <span class="icon-[tabler--chevron-right] size-5 rtl:rotate-180"></span>
-                        </a>
-                    {% else %}
-                        <span class="btn btn-text max-sm:btn-square btn-disabled pointer-events-none">
-                            <span class="hidden sm:inline">Next</span>
-                            <span class="icon-[tabler--chevron-right] size-5 rtl:rotate-180"></span>
-                        </span>
-                    {% endif %}
-                </div>
                 {% endif %}
-
-            </main>
+            {% endfor %}
         </div>
-    <script src="{% static 'js/flyonui.js' %}"></script>
-</body>
-</html>
+
+        <!-- Next button -->
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" type="button" class="btn btn-text hover:text-bg-soft-primary max-sm:btn-square">
+                <span class="hidden sm:inline">Next</span>
+                <span class="icon-[tabler--chevron-right] size-5 rtl:rotate-180"></span>
+            </a>
+        {% else %}
+            <span class="btn btn-text max-sm:btn-square btn-disabled pointer-events-none">
+                <span class="hidden sm:inline">Next</span>
+                <span class="icon-[tabler--chevron-right] size-5 rtl:rotate-180"></span>
+            </span>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endblock %}

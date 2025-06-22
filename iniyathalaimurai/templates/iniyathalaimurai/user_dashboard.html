@@ -1,250 +1,83 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | Iniya Thalaimurai</title>
-    <link rel="stylesheet" href="{% static 'src/output.css' %}">
-</head>
-<body class="flex flex-col min-h-screen w-full">
-    <!-- navbar -->
-    <nav class="navbar bg-base-100 max-sm:rounded max-sm:shadow-sm sm:border-b border-base-content/25 z-10 h-16 sticky top-0">
-        <button type="button" class="btn btn-text max-sm:btn-square sm:hidden me-2" aria-haspopup="dialog" aria-expanded="false" aria-controls="with-navbar-sidebar" data-overlay="#with-navbar-sidebar" >
-            <span class="icon-[tabler--menu-2] size-5"></span>
-        </button>
-        <div class="navbar-start flex flex-1 items-center">
-            <a class="link text-base-content link-neutral text-xl font-bold no-underline flex items-center gap-2" href="#">
-                <img src="{% static 'iniyathalaimurai/esevai logo.png' %}" alt="esevai logo" class="size-8">
-                <p>Iniya Thalaimurai</p>
-            </a>
-        </div>
-        <div class="navbar-end flex items-center gap-4">
-            <div class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]">
-            <button id="dropdown-scrollable" type="button" class="dropdown-toggle flex items-center" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-                <div class="avatar">
-                    <div class="size-9.5 rounded-full mx-2">
-                        <img src="{% static 'iniyathalaimurai/pfp.png' %}" alt="user avatar" />
-                    </div>
-                </div>
-                <div class="flex items-center flex-col justify-center">
-                    <p class="text-base-content">
-                        {% if request.user.name %}
-                            {{ request.user.name }}
-                        {% else %}
-                            {{ request.user.phone_num }}
-                        {% endif %}
-                    </p>
-                    <small class="text-base-content/50">
-                        {% if request.user.is_staff %}
-                            Admin
-                        {% else %}
-                            Customer
-                        {% endif %}
-                    </small>
-                </div>
-            </button>
-            <ul class="dropdown-menu dropdown-open:opacity-100 shadow-md border border-base-content/25 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-avatar">
-                <li class="dropdown-header justify-center gap-2">
-                    <p class="text-base-content text-sm">{{ request.user.phone_num }}</p>
-                </li>
-                <li>
-                <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--user]"></span>
-                    My Profile
-                </a>
-                </li>
-                <li>
-                <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--settings]"></span>
-                    Settings
-                </a>
-                </li>
-                <li>
-                <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--receipt-rupee]"></span>
-                    Billing
-                </a>
-                </li>
-                <li>
-                <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--help-triangle]"></span>
-                    FAQs
-                </a>
-                </li>
-                <li class="dropdown-footer gap-2">
-                <a class="btn btn-error btn-soft btn-block" href="{% url 'users:logout' %}">
-                    <span class="icon-[tabler--logout]"></span>
-                    Sign out
-                </a>
-                </li>
-            </ul>
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Home | Iniya Thalaimurai{% endblock %}
+
+{% block content %}    
+    <!-- stats Web UI -->
+    <div class="w-full justify-center hidden sm:flex flex-wrap gap-4 sm:space-x-8 sm:px-8">
+        {% for stat in service_data %}
+        <div class="card group shadow-md hover:shadow-lg max-w-sm">
+            <figure>
+                <img src="{{ stat.image_url }}" alt="{{ stat.category }} image"
+                class="transition-transform duration-500 w-[300px] h-[200px] group-hover:scale-110" />
+            </figure>
+            <div class="card-body flex-row justify-center items-center">
+                <p class="card-title">{{ stat.category }}</p>
+                <span class="badge badge-primary badge-lg">{{ stat.application_count }}</span>
             </div>
         </div>
-    </nav>
-    <!-- main content layout -->
-    <div class="flex flex-1">
-        <!-- sidebar -->
-        <aside id="with-navbar-sidebar" class="w-72 bg-base-100 sm:h-[calc(100vh-4rem)] sm:sticky sm:top-[4rem] hidden sm:flex flex-col overlay [--auto-close:sm] sm:shadow-none overlay-open:translate-x-0 drawer sm:pt-0 pt-4 drawer-start sm:translate-x-0 sm:border-r border-base-content/25" role="dialog" tabindex="-1" >
-            <div class="drawer-body px-2 py-2">
-                <ul class="menu space-y-0.5 p-0">
-                    <li>
-                        <a href="{% url 'iniyathalaimurai:user_dashboard' %}" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--home] size-5"></span>
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="space-y-0.5">
-                        <a class="collapse-toggle collapse-open:text-bg-soft-primary hover:text-bg-soft-primary" id="menu-app" data-collapse="#menu-app-collapse">
-                            <span class="icon-[tabler--apps] size-5"></span>
-                            New Application
-                            <span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"></span>
-                        </a>
-                        <ul id="menu-app-collapse" class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300" aria-labelledby="menu-app" >
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-a] size-5"></span>
-                                Aadhaar Card
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-p] size-5"></span>
-                                PAN Card
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-r] size-5"></span>
-                                Ration Card
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-d] size-5"></span>
-                                Driving Licence
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--letter-v] size-5"></span>
-                                Voter ID
-                            </a>
-                        </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="#" class="hover:text-bg-soft-primary">
-                            <span class="icon-[tabler--currency-rupee] size-5"></span>
-                            New Payment
-                        </a>
-                    </li>
-                    <div class="divider text-base-content/50 m-0 py-6">View</div>
-                    <li>
-                        <a href="{% url 'iniyathalaimurai:user_applications' %}" class="hover:text-bg-soft-primary">
-                        <span class="icon-[tabler--file-check] size-5"></span>
-                            My Applications
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'iniyathalaimurai:user_payments' %}" class="hover:text-bg-soft-primary">
-                        <span class="icon-[tabler--receipt-rupee] size-5"></span>
-                            My Payments
-                        </a>
-                    </li>
-                    <div class="divider text-base-content/50 m-0 py-6">Account</div>
-                    <li>
-                        <a href="#" class="hover:text-bg-soft-primary">
-                        <span class="icon-[tabler--user] size-5"></span>
-                            My Profile
-                        </a>
-                    </li>
-                    </ul>
-            </div>
-            </aside>
+        {% endfor %}
+    </div>
+    
+    <!-- stats mobile UI -->
+    <div class="sm:hidden flex flex-col justify-center items-center">
+        <h2 class="text-2xl font-bold mb-4">Number of Applications you submitted</h2>
+        <ul class="border-base-content/25 divide-base-content/25 w-64 divide-y rounded-md border *:p-3 *:first:rounded-t-md *:last:rounded-b-md">
+            {% for stat in service_data %}
+                <li class="flex items-center justify-between">
+                    {{ stat.category }} <span class="badge badge-primary rounded-full">{{ stat.application_count }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="text-base-content p-5 text-left text-lg font-semibold rtl:text-right">
+        <p>Recent Applications</p>
+        <p class="text-base-content/80 mt-1 text-sm font-normal">
+            Browse the list of your recent applications
+        </p>
+    </div>
 
-            <!-- page content -->
-            <main class="flex-1 w-full p-4">
-                <!-- stats Web UI -->
-                <div class="w-full justify-center hidden sm:flex flex-wrap gap-4 sm:space-x-8 sm:px-8">
-                    {% for stat in service_data %}
-                    <div class="card group shadow-md hover:shadow-lg max-w-sm">
-                        <figure>
-                            <img src="{{ stat.image_url }}" alt="{{ stat.category }} image"
-                            class="transition-transform duration-500 w-[300px] h-[200px] group-hover:scale-110" />
-                        </figure>
-                        <div class="card-body flex-row justify-center items-center">
-                            <p class="card-title">{{ stat.category }}</p>
-                            <span class="badge badge-primary badge-lg">{{ stat.application_count }}</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                
-                <!-- stats mobile UI -->
-                <div class="sm:hidden flex flex-col justify-center items-center">
-                    <h2 class="text-2xl font-bold mb-4">Number of Applications you submitted</h2>
-                    <ul class="border-base-content/25 divide-base-content/25 w-64 divide-y rounded-md border *:p-3 *:first:rounded-t-md *:last:rounded-b-md">
-                        {% for stat in service_data %}
-                            <li class="flex items-center justify-between">
-                                {{ stat.category }} <span class="badge badge-primary rounded-full">{{ stat.application_count }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="text-base-content p-5 text-left text-lg font-semibold rtl:text-right">
-                    <p>Recent Applications</p>
-                    <p class="text-base-content/80 mt-1 text-sm font-normal">
-                        Browse the list of your recent applications
-                    </p>
-                </div>
-
-                <!-- 10 Recent applications of this user-->
-                <div class="w-full rounded-lg pb-2 shadow-md">
-                    <div class="overflow-x-auto">
-                        <table class="table table-striped ">
-                            <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Application ID</th>
-                                <th>Service Name</th>
-                                <th>Status</th>
-                                <th>Amount</th>
-                                <th>Applied At</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for appln in recent_applications %}  
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>
-                                        {{ appln.applicationID }}
-                                    </td>
-                                    <td>{{ appln.service.category }} - {{ appln.service.name }}</td>
-                                    <td>
-                                        <span class="badge 
-                                        {% if appln.status == 'processing' %} badge-warning 
-                                        {% elif appln.status == 'accepted' %} badge-success 
-                                        {% elif appln.status == 'rejected' %} badge-error 
-                                        {% endif %} text-xs">
-                                            {{ appln.status|capfirst }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {{ appln.payment.amount }}
-                                    </td>
-                                    <td>
-                                        {{ appln.userAppliedAt|date:"d-m-Y" }}
-                                        {{ appln.userAppliedAt|time:"h:i A" }}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </main>
+    <!-- 10 Recent applications of this user-->
+    <div class="w-full rounded-lg pb-2 shadow-md">
+        <div class="overflow-x-auto">
+            <table class="table table-striped ">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Application ID</th>
+                    <th>Service Name</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Applied At</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for appln in recent_applications %}  
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {{ appln.applicationID }}
+                        </td>
+                        <td>{{ appln.service.category }} - {{ appln.service.name }}</td>
+                        <td>
+                            <span class="badge 
+                            {% if appln.status == 'processing' %} badge-warning 
+                            {% elif appln.status == 'accepted' %} badge-success 
+                            {% elif appln.status == 'rejected' %} badge-error 
+                            {% endif %} text-xs">
+                                {{ appln.status|capfirst }}
+                            </span>
+                        </td>
+                        <td>
+                            {{ appln.payment.amount }}
+                        </td>
+                        <td>
+                            {{ appln.userAppliedAt|date:"d-m-Y" }}
+                            {{ appln.userAppliedAt|time:"h:i A" }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
-    <script src="{% static 'js/flyonui.js' %}"></script>
-</body>
-</html>
+    </div>
+{% endblock %}

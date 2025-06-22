@@ -1,0 +1,127 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Apply New | Iniya Thalaimurai{% endblock %}
+
+{% block content %}
+    <!-- All Applications of this user -->
+    <div class="text-base-content p-5 text-left text-lg font-semibold rtl:text-right">
+        <p>New Application for <span class="text-primary">{{ preselected_category.name }}</span></p>
+    </div>
+    <!-- New Application Form -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        {% if preselected_cat_id %}
+            <!-- Hidden input if preselected -->
+            <input type="hidden" name="category" id="categorySelect" value="{{ preselected_cat_id }}">
+        {% else %}
+            <!-- Show category select if not pre-selected -->
+            <label class="block">
+                <span class="font-medium">Service Category</span>
+                <select name="category" id="categorySelect" class="select select-bordered w-full">
+                    <option disabled selected>Choose a Category</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}"
+                            {% if cat.id|stringformat:"s" == preselected_cat_id %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+        {% endif %}
+
+
+        <!-- Service Name -->
+        <label class="block">
+            <span class="font-medium">Service Name</span>
+            <select name="service" id="serviceSelect" class="select select-bordered w-full">
+                <option disabled selected>Choose a Service</option>
+            </select>
+        </label>
+        <p class="mt-2 font-medium">
+            Service Price: <span id="servicePrice" class="text-success">₹ --</span>
+        </p>
+        <input type="hidden" id="priceValue" name="priceValue">
+
+        <!-- File Upload -->
+        <label class="block">
+            <span class="font-medium">Upload Documents</span>
+            <input type="file" name="docs" multiple accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered w-full" required>
+            <small class="text-gray-500">Upload images or PDFs only</small>
+        </label>
+
+        <button type="submit" class="btn btn-primary">Submit Application</button>
+    </form>
+    <script>
+        const serviceMap = {
+        {% for cat in categories %}
+            "{{ cat.id }}": [
+            {% for s in cat.services.all %}
+                { id: "{{ s.id }}", name: "{{ s.name }}", price: {{ s.price }} },
+            {% endfor %}
+            ],
+        {% endfor %}
+        };
+
+        const categorySelect = document.getElementById('categorySelect');
+        const serviceSelect = document.getElementById('serviceSelect');
+        const priceField = document.getElementById('servicePrice');
+        const priceHiddenInput = document.getElementById('priceValue');
+        const fileInput = document.querySelector('input[name="docs"]');
+
+        let currentServices = [];
+
+        function populateServices(selectedCatId) {
+        currentServices = serviceMap[selectedCatId] || [];
+        serviceSelect.innerHTML = `<option disabled selected>Choose a Service</option>`;
+        currentServices.forEach(service => {
+            const opt = document.createElement('option');
+            opt.value = service.id;
+            opt.textContent = service.name;
+            serviceSelect.appendChild(opt);
+        });
+        }
+
+        categorySelect?.addEventListener('change', function () {
+        populateServices(this.value);
+        priceField.textContent = '₹ --';
+        priceHiddenInput.value = '';
+        });
+
+        serviceSelect?.addEventListener('change', function () {
+        const selectedServiceId = this.value;
+        const selectedService = currentServices.find(s => s.id === selectedServiceId);
+        if (selectedService) {
+            priceField.textContent = `₹ ${selectedService.price}`;
+            priceHiddenInput.value = selectedService.price;
+        }
+        });
+
+        // auto trigger service population if category pre-filled
+        if (categorySelect && categorySelect.value) {
+        populateServices(categorySelect.value);
+        }
+
+        // ✅ File validation (type + size)
+        fileInput.addEventListener('change', function () {
+            const maxSizeMB = 10;
+            const files = Array.from(this.files);
+            let valid = true;
+
+            files.forEach(file => {
+            const ext = file.name.split('.').pop().toLowerCase();
+            const sizeMB = file.size / (1024 * 1024);
+
+            if (!['pdf', 'jpg', 'jpeg', 'png'].includes(ext)) {
+                alert(`❌ ${file.name} has an invalid file type.`);
+                valid = false;
+            }
+
+            if (sizeMB > maxSizeMB) {
+                alert(`❌ ${file.name} is too large (max ${maxSizeMB}MB).`);
+                valid = false;
+            }
+            });
+
+            if (!valid) this.value = ''; // Clear input if invalid
+        });
+    </script>
+{% endblock %}
