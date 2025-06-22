@@ -1,6 +1,13 @@
-users:
+Customer:
     username, password = phonenum
-    9342222369
-    
-superusers:
+    9342222368
+    9342222367
+
+Staff:
+    9342222366
     9092296466, admin123
+    9342222369, 9342222369
+
+superuser:
+    9092296466, admin123
+    9342222369, 9342222369

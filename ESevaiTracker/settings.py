@@ -92,6 +92,7 @@ DATABASES = {
         'PASSWORD': 'kk75',
         'HOST':'localhost',
         'PORT':'3306',
+        'TIME_ZONE': 'Asia/Kolkata',
     }
 }
 
@@ -136,6 +137,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'  # or os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
