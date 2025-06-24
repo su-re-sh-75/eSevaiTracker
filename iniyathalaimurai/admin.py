@@ -25,7 +25,7 @@ class SubmittedDocumentInline(admin.TabularInline):
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'applicationID', 'acknowledgementNumber', 'customer', 'service', 'status', 'payment__amount',
+        'id', 'acknowledgementNumber', 'customer', 'service', 'status', 'payment__amount',
         'userAppliedAt', 'applicationAppliedAt',
     ]
     list_filter = ['status', 'service__category']

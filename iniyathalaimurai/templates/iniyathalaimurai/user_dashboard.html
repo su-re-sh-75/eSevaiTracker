@@ -5,16 +5,18 @@
     <!-- stats Web UI -->
     <div class="w-full justify-center hidden sm:flex flex-wrap gap-4 sm:space-x-8 sm:px-8">
         {% for stat in service_data %}
-        <div class="card group shadow-md hover:shadow-lg max-w-sm">
-            <figure>
-                <img src="{{ stat.image_url }}" alt="{{ stat.category }} image"
-                class="transition-transform duration-500 w-[300px] h-[200px] group-hover:scale-110" />
-            </figure>
-            <div class="card-body flex-row justify-center items-center">
-                <p class="card-title">{{ stat.category }}</p>
-                <span class="badge badge-primary badge-lg">{{ stat.application_count }}</span>
+        <a href="{% url 'iniyathalaimurai:new_application' %}?category={{ stat.id }}" class="no-underline text-inherit">
+            <div class="card group shadow-md hover:shadow-lg max-w-sm">
+                <figure>
+                    <img src="{{ stat.image_url }}" alt="{{ stat.category }} image"
+                    class="transition-transform duration-500 w-[300px] h-[200px] group-hover:scale-110" />
+                </figure>
+                <div class="card-body flex-row justify-center items-center">
+                    <p class="card-title">{{ stat.category }}</p>
+                    <span class="badge badge-primary badge-lg">{{ stat.application_count }}</span>
+                </div>
             </div>
-        </div>
+        </a>
         {% endfor %}
     </div>
     
@@ -43,7 +45,7 @@
                 <thead>
                 <tr>
                     <th>#</th>
-                    <th>Application ID</th>
+                    <th>Acknowledgement No</th>
                     <th>Service Name</th>
                     <th>Status</th>
                     <th>Amount</th>
@@ -54,9 +56,7 @@
                 {% for appln in recent_applications %}  
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>
-                            {{ appln.applicationID }}
-                        </td>
+                        <td class="text-center">{{ appln.acknowledgementNumber|default:"-" }}</td>
                         <td>{{ appln.service.category }} - {{ appln.service.name }}</td>
                         <td>
                             <span class="badge 

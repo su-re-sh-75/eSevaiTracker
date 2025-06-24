@@ -31,7 +31,6 @@ class Application(models.Model):
         ('rejected', 'Rejected'),
     ]
 
-    applicationID = models.CharField(max_length=40, unique=True, blank=True)
     acknowledgementNumber = models.CharField(max_length=40, unique=True, blank=True, null=True)
     customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
@@ -39,9 +38,18 @@ class Application(models.Model):
     payment = models.OneToOneField('Payment', on_delete=models.SET_NULL, null=True, blank=True)
     userAppliedAt = models.DateTimeField(auto_now_add=True)
     applicationAppliedAt = models.DateTimeField(null=True, blank=True)
+    certificate = models.FileField(
+        upload_to='certificates/',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
-        return f"{self.customer.phone_num}'s Application {self.applicationID} - {self.service}"
+        if self.acknowledgementNumber:
+            return f"{self.customer.phone_num}'s Application {self.acknowledgementNumber} - {self.service}"
+        else:
+            return f"{self.customer.phone_num}'s Application - {self.service}"
+
 
 class Payment(models.Model):
     STATUS_CHOICES = [

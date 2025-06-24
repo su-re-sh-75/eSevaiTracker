@@ -8,24 +8,25 @@
     </div>
 
     <!-- Table Container -->
-    <div class="w-full rounded-lg pb-2 shadow-md">
-        <div class="overflow-x-auto">
+    <div class="rounded-lg pb-2 shadow-md">
+        <div class="w-full overflow-x-auto">
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Application ID</th>
+                        <th>Acknowledgement No</th>
                         <th>Service Name</th>
                         <th>Status</th>
                         <th>Amount</th>
                         <th>Applied At</th>
+                        <th>Download certificate</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for appln in page_obj %}
                         <tr>
                             <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
-                            <td>{{ appln.applicationID }}</td>
+                            <td class="text-center">{{ appln.acknowledgementNumber|default:"-" }}</td>
                             <td>{{ appln.service.category }} - {{ appln.service.name }}</td>
                             <td>
                                 <span class="badge 
@@ -40,6 +41,15 @@
                             <td>
                                 {{ appln.userAppliedAt|date:"d-m-Y" }}
                                 {{ appln.userAppliedAt|time:"h:i A" }}
+                            </td>
+                            <td class="text-center">
+                            {% if appln.certificate %}
+                                <a href="{{ appln.certificate.url }}" download class="btn btn-sm btn-info text-white" title="Download Certificate">
+                                    <span class="icon-[tabler--download] size-5"></span>
+                                </a>
+                            {% else %}
+                                <span class="text-base-content/50">-</span>
+                            {% endif %}
                             </td>
                         </tr>
                     {% empty %}

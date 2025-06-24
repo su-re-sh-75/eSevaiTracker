@@ -13,7 +13,7 @@
             <table class="table table-striped">
                 <thead>
                     <th>#</th>
-                    <th>Payment ID</th>
+                    <th>Transcation ID</th>
                     <th>Service name</th>
                     <th>Status</th>
                     <th>Amount</th>
@@ -23,7 +23,7 @@
                     {% for payment in page_obj %}
                         <tr>
                             <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
-                            <td>{{ payment.paymentID }}</td>
+                            <td>{{ payment.transactionID }}</td>
                             <td>{{ payment.service.category.name }} - {{ payment.service.name }}</td>
                             <td>
                                 <span class="badge 

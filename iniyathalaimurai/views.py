@@ -38,7 +38,6 @@ def new_application(request):
                 customer=request.user,
                 service=service,
                 status='processing',
-                applicationID=f'APP-{datetime.now().strftime("%Y%m%d-%H%M%S")}',
                 payment=payment
             )
 
@@ -122,6 +121,7 @@ def user_dashboard(request):
         application_count = user_applications.count()
 
         service_data.append({
+            'id': category.id,
             'category': category.name,
             'image_url': category.image.url,
             'application_count': application_count
