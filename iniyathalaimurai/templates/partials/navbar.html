@@ -17,7 +17,7 @@
                     <img src="{% static 'iniyathalaimurai/pfp.png' %}" alt="user avatar" />
                 </div>
             </div>
-            <div class="flex items-center flex-col justify-center">
+            <div class="sm:flex items-center flex-col justify-center hidden">
                 <p class="text-base-content">
                     {% if request.user.name %}
                         {{ request.user.name }}
@@ -35,8 +35,24 @@
             </div>
         </button>
         <ul class="dropdown-menu dropdown-open:opacity-100 shadow-md border border-base-content/25 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-avatar">
-            <li class="dropdown-header justify-center gap-2">
-                <p class="text-base-content text-sm">{{ request.user.phone_num }}</p>
+            <li class="dropdown-header justify-center items-start gap-2">
+                <div class="flex  flex-col items-start px-2">
+                    <p class="text-base-content sm:hidden">
+                    {% if request.user.name %}
+                        {{ request.user.name }}
+                    {% else %}
+                        {{ request.user.phone_num }}
+                    {% endif %}
+                    </p>
+                    <p class="text-base-content text-sm">{{ request.user.phone_num }}</p>
+                </div>
+                <p class="text-base-content/50 text-sm px-2 sm:hidden">
+                    {% if request.user.is_staff %}
+                        Admin
+                    {% else %}
+                        Customer
+                    {% endif %}
+                </p>
             </li>
             <li>
             <a class="dropdown-item" href="#" class="hover:text-bg-soft-primary">

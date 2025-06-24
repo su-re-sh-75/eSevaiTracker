@@ -1,127 +1,126 @@
 {% extends "layouts/dashboard_base.html" %}
 {% block title %}Apply New | Iniya Thalaimurai{% endblock %}
 
+{% load static %}
 {% block content %}
-    <!-- All Applications of this user -->
-    <div class="text-base-content p-5 text-left text-lg font-semibold rtl:text-right">
-        <p>New Application for <span class="text-primary">{{ preselected_category.name }}</span></p>
-    </div>
-    <!-- New Application Form -->
-    <form method="POST" enctype="multipart/form-data" class="space-y-4">
-        {% csrf_token %}
-        {% if preselected_cat_id %}
-            <!-- Hidden input if preselected -->
-            <input type="hidden" name="category" id="categorySelect" value="{{ preselected_cat_id }}">
-        {% else %}
-            <!-- Show category select if not pre-selected -->
-            <label class="block">
-                <span class="font-medium">Service Category</span>
-                <select name="category" id="categorySelect" class="select select-bordered w-full">
-                    <option disabled selected>Choose a Category</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat.id }}"
-                            {% if cat.id|stringformat:"s" == preselected_cat_id %}selected{% endif %}>
-                            {{ cat.name }}
-                        </option>
-                    {% endfor %}
+    <div class=" flex items-center justify-center flex-col">
+        <!-- All Applications of this user -->
+        <div class="text-base-content p-5 text-lg font-semibold">
+            <p>New Application for <span class="text-primary">{{ preselected_category.name }}</span></p>
+        </div>
+        <!-- New Application Form -->
+        <form id="newApplicationForm" method="POST" enctype="multipart/form-data" action="{% url 'iniyathalaimurai:new_application' %}" class="space-y-4 w-96 p-2">
+            {% csrf_token %}
+            {% if preselected_cat_id %}
+                <!-- Hidden input if preselected -->
+                <input type="hidden" name="category" id="categorySelect" value="{{ preselected_cat_id }}">
+            {% else %}
+                <!-- Show category select if not pre-selected -->
+                <div>
+                    <label class="font-medium" for="categorySelect">Service Category</label>
+                    <select name="category" class="select" id="categorySelect" required>
+                        <option disabled selected>Choose a Category</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}"
+                                {% if cat.id|stringformat:"s" == preselected_cat_id %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+
+            <!-- Service Name -->
+            <div>
+                <label for="serviceSelect">Service Name</label>
+                <select name="service" class="select" id="serviceSelect" required>
+                    <option value="" disabled selected>Choose a Service</option>
                 </select>
-            </label>
-        {% endif %}
+            </div>
 
+            <!-- Service Price -->
+            <p>
+                Service Price: <span id="servicePrice" class="text-success text-2xl">₹ --</span>
+            </p>
+            <input type="hidden" id="priceValue" name="priceValue">
 
-        <!-- Service Name -->
-        <label class="block">
-            <span class="font-medium">Service Name</span>
-            <select name="service" id="serviceSelect" class="select select-bordered w-full">
-                <option disabled selected>Choose a Service</option>
-            </select>
-        </label>
-        <p class="mt-2 font-medium">
-            Service Price: <span id="servicePrice" class="text-success">₹ --</span>
-        </p>
-        <input type="hidden" id="priceValue" name="priceValue">
+            <!-- payment -->
+            <div>
+                <img src="{% static 'iniyathalaimurai/qr-code.webp' %}" alt="QR Code" class="w-32 h-32 mx-auto">
+                <p class="text-sm text-base-content/70 mt-2">Scan to pay or pay to <span class="font-semibold">9342222369@yapl</span> or <span class="font-semibold">9342222369</span></p>
+            </div>
+            <div class="">
+                <label class="label-text text-base" for="transactionID"> UPI Transaction ID </label>
+                <input type="text" name="transactionID" class="input" id="transactionID" required/>
+            </div>
+            <div class="">
+                <label class="label-text text-base" for="paymentScreenshot"> Upload Payment Screenshot </label>
+                <input type="file" name="paymentScreenshot" class="input" id="paymentScreenshot" accept="image/*" required/>
+            </div>
+            <!-- File Upload -->
+            <div>
+                <label class="" for="uploadDocs">Upload Documents</label>
+                <input type="file" name="docs" id="uploadDocs" class="input max-w-sm" aria-label="file-input" accept="image/*, application/pdf" multiple />
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Application</button>
+        </form>
+    </div>
+    {% endblock %}
 
-        <!-- File Upload -->
-        <label class="block">
-            <span class="font-medium">Upload Documents</span>
-            <input type="file" name="docs" multiple accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered w-full" required>
-            <small class="text-gray-500">Upload images or PDFs only</small>
-        </label>
-
-        <button type="submit" class="btn btn-primary">Submit Application</button>
-    </form>
-    <script>
-        const serviceMap = {
+    {% block script %}
+    <script id="service-map" type="application/json">
+        {
         {% for cat in categories %}
             "{{ cat.id }}": [
             {% for s in cat.services.all %}
-                { id: "{{ s.id }}", name: "{{ s.name }}", price: {{ s.price }} },
+                { "id": "{{ s.id }}", "name": "{{ s.name }}", "price": {{ s.price }} }{% if not forloop.last %},{% endif %}
             {% endfor %}
-            ],
+            ]{% if not forloop.last %},{% endif %}
         {% endfor %}
-        };
-
-        const categorySelect = document.getElementById('categorySelect');
-        const serviceSelect = document.getElementById('serviceSelect');
-        const priceField = document.getElementById('servicePrice');
-        const priceHiddenInput = document.getElementById('priceValue');
-        const fileInput = document.querySelector('input[name="docs"]');
-
-        let currentServices = [];
-
-        function populateServices(selectedCatId) {
-        currentServices = serviceMap[selectedCatId] || [];
-        serviceSelect.innerHTML = `<option disabled selected>Choose a Service</option>`;
-        currentServices.forEach(service => {
-            const opt = document.createElement('option');
-            opt.value = service.id;
-            opt.textContent = service.name;
-            serviceSelect.appendChild(opt);
-        });
         }
+    </script>
 
-        categorySelect?.addEventListener('change', function () {
-        populateServices(this.value);
-        priceField.textContent = '₹ --';
-        priceHiddenInput.value = '';
-        });
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {   
+            const serviceMap = JSON.parse(document.getElementById("service-map").textContent);     
+            const categorySelect = document.getElementById('categorySelect');
+            const serviceSelect = document.getElementById('serviceSelect');
+            const priceField = document.getElementById('servicePrice');
+            const priceHiddenInput = document.getElementById('priceValue');
+            const applicationForm = document.getElementById('newApplicationForm');
+            let currentServices = [];
 
-        serviceSelect?.addEventListener('change', function () {
-        const selectedServiceId = this.value;
-        const selectedService = currentServices.find(s => s.id === selectedServiceId);
-        if (selectedService) {
-            priceField.textContent = `₹ ${selectedService.price}`;
-            priceHiddenInput.value = selectedService.price;
-        }
-        });
-
-        // auto trigger service population if category pre-filled
-        if (categorySelect && categorySelect.value) {
-        populateServices(categorySelect.value);
-        }
-
-        // ✅ File validation (type + size)
-        fileInput.addEventListener('change', function () {
-            const maxSizeMB = 10;
-            const files = Array.from(this.files);
-            let valid = true;
-
-            files.forEach(file => {
-            const ext = file.name.split('.').pop().toLowerCase();
-            const sizeMB = file.size / (1024 * 1024);
-
-            if (!['pdf', 'jpg', 'jpeg', 'png'].includes(ext)) {
-                alert(`❌ ${file.name} has an invalid file type.`);
-                valid = false;
+            function populateServices(selectedCatId) {
+                currentServices = serviceMap[selectedCatId] || [];
+                serviceSelect.innerHTML = `<option value="" disabled selected>Choose a Service</option>`;
+                currentServices.forEach(service => {
+                    const opt = document.createElement('option');
+                    opt.value = service.id;
+                    opt.textContent = service.name;
+                    serviceSelect.appendChild(opt);
+                });
             }
 
-            if (sizeMB > maxSizeMB) {
-                alert(`❌ ${file.name} is too large (max ${maxSizeMB}MB).`);
-                valid = false;
-            }
+            categorySelect?.addEventListener('change', function () {
+                populateServices(this.value);
+                priceField.textContent = '₹ --';
+                priceHiddenInput.value = '';
             });
 
-            if (!valid) this.value = ''; // Clear input if invalid
+            // auto trigger service population if category pre-filled
+            if (categorySelect && categorySelect.value) {
+                populateServices(categorySelect.value);
+            };
+
+            serviceSelect?.addEventListener('change', function () {
+                const selectedServiceId = this.value;
+                const selectedService = currentServices.find(s => s.id === selectedServiceId);
+                if (selectedService) {
+                    priceField.textContent = `₹ ${selectedService.price}`;
+                    priceHiddenInput.value = selectedService.price;
+                }
+            });
+            
         });
     </script>
 {% endblock %}

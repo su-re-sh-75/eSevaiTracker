@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import user_dashboard, staff_dashboard, user_applications, user_payments
+from .views import user_dashboard, staff_dashboard, user_applications, user_payments, new_application
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -10,6 +10,7 @@ urlpatterns = [
     path('staff/dashboard/', staff_dashboard, name="staff_dashboard"),
     path('applications/', user_applications, name="user_applications"),
     path('payments/', user_payments, name="user_payments"),
+    path('applications/new/', new_application, name='new_application'),
 
 ]
 

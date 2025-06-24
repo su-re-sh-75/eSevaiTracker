@@ -1,6 +1,13 @@
 {% load static %}
 {% with path=request.path selected_category_id=request.GET.category %}
 <aside id="with-navbar-sidebar" class="w-72 bg-base-100 sm:h-[calc(100vh-4rem)] sm:sticky sm:top-[4rem] hidden sm:flex flex-col overlay [--auto-close:sm] sm:shadow-none overlay-open:translate-x-0 drawer sm:pt-0 pt-4 drawer-start sm:translate-x-0 sm:border-r border-base-content/25" role="dialog" tabindex="-1" >
+    <div class="hidden">
+        <span class="icon-[tabler--letter-a]"></span>
+        <span class="icon-[tabler--letter-p]"></span>
+        <span class="icon-[tabler--letter-d]"></span>
+        <span class="icon-[tabler--letter-r]"></span>
+        <span class="icon-[tabler--letter-v]"></span>
+    </div>
     <div class="drawer-body px-2 py-2">
         <ul class="menu space-y-0.5 p-0">
             <li>
@@ -31,12 +38,6 @@
                 </ul>
                 {% endwith %}
             </li>
-            <li>
-                <a href="#" class="hover:text-bg-soft-primary">
-                    <span class="icon-[tabler--currency-rupee] size-5"></span>
-                    New Payment
-                </a>
-            </li>
             <div class="divider text-base-content/50 m-0 py-6">View</div>
             <li>
                 <a href="{% url 'iniyathalaimurai:user_applications' %}" class="{% if path == '/applications/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
@@ -46,7 +47,7 @@
             </li>
             <li>
                 <a href="{% url 'iniyathalaimurai:user_payments' %}" class="{% if path == '/payments/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
-                <span class="icon-[tabler--receipt-rupee] size-5"></span>
+                <span class="icon-[tabler--currency-rupee] size-5"></span>
                     My Payments
                 </a>
             </li>
