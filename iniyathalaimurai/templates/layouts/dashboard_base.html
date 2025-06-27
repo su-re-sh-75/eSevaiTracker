@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'src/output.css' %}">
 </head>
 <body class="flex flex-col min-h-screen w-full">
+
     <!-- django messages -->
     <div class="hidden">
         alert-success alert-error alert-info alert-warning
@@ -34,7 +35,12 @@
     <!-- main content layout -->
     <div class="flex flex-1">
         <!-- sidebar -->
-        {% include 'partials/sidebar.html' %}
+        {% if request.user.is_staff %}
+            {% include 'partials/staff sidebar.html' %}
+        {% else %}
+            {% include 'partials/sidebar.html' %}
+        {% endif %}
+        
         <!-- page content -->
         <main class="flex-1 w-full p-4">
             {% block content %}

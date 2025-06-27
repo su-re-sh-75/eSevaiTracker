@@ -1,0 +1,56 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}New Customer | Iniya Thalaimurai{% endblock %}
+{% load static %}
+{% block content %}
+<div class="flex justify-center h-3/4 items-center">
+    <div>
+        <h3 class="text-base-content text-center my-3 text-2xl font-semibold">Create a Free Customer Account</h3>
+        <form class="space-y-4" method="post" action="{% url 'iniyathalaimurai:new_customer' %}">
+            {% csrf_token %}
+            <div>
+                <label class="label-text" for="phone_num">Phone Number</label>
+                <input type="text" placeholder="Enter your Phone Number" class="input" id="phone_num" name="phone_num" pattern="^[0-9]{10}$" required />
+            </div>
+            <div>
+                <label class="label-text" for="name">Name</label>
+                <input type="text" placeholder="Enter your Name" class="input" id="name" name="name" maxlength="35" required />
+            </div>
+            <div>
+                <label class="label-text" for="userPassword">Password</label>
+                <div class="input">
+                    <input id="userPassword" type="password" name="password" placeholder="············" required />
+                    <button
+                    type="button"
+                    data-toggle-password='{ "target": "#userPassword" }'
+                    class="block cursor-pointer"
+                    aria-label="userPassword"
+                    >
+                    <span class="icon-[tabler--eye] password-active:block hidden size-5 shrink-0"></span>
+                    <span class="icon-[tabler--eye-off] password-active:hidden block size-5 shrink-0"></span>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="label-text" for="userConfrimPassword">Confirm Password</label>
+                <div class="input">
+                    <input id="userConfrimPassword" type="password" placeholder="············" required />
+                    <button
+                    type="button"
+                    data-toggle-password='{ "target": "#userConfrimPassword" }'
+                    class="block cursor-pointer"
+                    aria-label="userConfrimPassword"
+                    >
+                    <span class="icon-[tabler--eye] password-active:block hidden size-5 shrink-0"></span>
+                    <span class="icon-[tabler--eye-off] password-active:hidden block size-5 shrink-0"></span>
+                    </button>
+                </div>
+            </div>
+            <p id="passwordError" class="hidden my-2"></p>
+            <button class="btn btn-lg btn-primary btn-gradient btn-block" type="submit">Create Account</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'users/js/form_validator.js' %}"></script>
+{% endblock %}

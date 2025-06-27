@@ -1,5 +1,6 @@
 {% load static %}
-{% with path=request.path selected_category_id=request.GET.category %}
+{% load custom_filters %}
+{% with path=request.path %}
 <aside id="with-navbar-sidebar" class="w-72 bg-base-100 sm:h-[calc(100vh-4rem)] sm:sticky sm:top-[4rem] hidden sm:flex flex-col overlay [--auto-close:sm] sm:shadow-none overlay-open:translate-x-0 drawer sm:pt-0 pt-4 drawer-start sm:translate-x-0 sm:border-r border-base-content/25" role="dialog" tabindex="-1" >
     <div class="hidden">
         <span class="icon-[tabler--letter-a]"></span>
@@ -11,44 +12,42 @@
     <div class="drawer-body px-2 py-2">
         <ul class="menu space-y-1 p-0">
             <li>
-                <a href="{% url 'iniyathalaimurai:user_dashboard' %}" class="{% if path == '/dashboard/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
+                <a href="{% url 'iniyathalaimurai:staff_dashboard' %}" class="{% if path == '/staff/dashboard/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
                     <span class="icon-[tabler--home] size-5"></span>
                     Dashboard
                 </a>
             </li>
             <li class="space-y-1">
-                {% with new_appln_url=path|slice:":18" %}
                 <a class="collapse-toggle hover:text-bg-soft-primary" id="menu-app" data-collapse="#menu-app-collapse">
-                    <span class="icon-[tabler--apps] size-5"></span>
-                    New Application
+                    <span class="icon-[tabler--user-cog] size-5"></span>
+                    User Management
                     <span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"></span>
                 </a>
-                <ul id="menu-app-collapse" class="collapse {% if new_appln_url == '/applications/new/' %}collapse-open{% else %}hidden{% endif %} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300" aria-labelledby="menu-app">
-                    {% for cat in categories %}
+                <ul id="menu-app-collapse" class="collapse {% if path|startswith:'/customers/' %}collapse-open{% else %}hidden{% endif %} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300" aria-labelledby="menu-app" >
                     <li>
-                        <a href="{% url 'iniyathalaimurai:new_application' %}?category={{ cat.id }}" 
-                        class="{% if cat.id|stringformat:'s' == selected_category_id %}text-bg-soft-primary{% endif %} hover:text-bg-soft-primary">
-                            {% with initial=cat.name|slice:":1" %}
-                            <span class="icon-[tabler--letter-{{ initial|lower }}] size-5"></span>
-                            {% endwith %}
-                            {{ cat.name }}
+                        <a href="{% url 'iniyathalaimurai:new_customer' %}" class="{% if path == '/customers/new/' %}text-bg-soft-primary{% endif %} hover:text-bg-soft-primary">
+                        <span class="icon-[tabler--user-plus] size-5"></span>
+                            New Customer
                         </a>
                     </li>
-                    {% endfor %}
+                    <li>
+                        <a href="{% url 'iniyathalaimurai:manage_customers' %}" class="{% if path|startswith:'/customers/manage/' %}text-bg-soft-primary{% endif %} hover:text-bg-soft-primary">
+                        <span class="icon-[tabler--user-edit] size-5"></span>
+                            Manage Customers
+                        </a>
+                    </li>
                 </ul>
-                {% endwith %}
             </li>
-            <div class="divider text-base-content/50 m-0 py-6">View</div>
             <li>
                 <a href="{% url 'iniyathalaimurai:user_applications' %}" class="{% if path == '/applications/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
                 <span class="icon-[tabler--file-check] size-5"></span>
-                    My Applications
+                    Manage Applications
                 </a>
             </li>
             <li>
                 <a href="{% url 'iniyathalaimurai:user_payments' %}" class="{% if path == '/payments/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
                 <span class="icon-[tabler--currency-rupee] size-5"></span>
-                    My Payments
+                    Manage Payments
                 </a>
             </li>
             <div class="divider text-base-content/50 m-0 py-6">Account</div>

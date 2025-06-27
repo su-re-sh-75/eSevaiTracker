@@ -4,29 +4,44 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import User
 
+from django.contrib.auth import authenticate, login, get_user_model
+
+User = get_user_model()
+
 def login_view(request):
     if request.method == 'POST':
         phone_num = request.POST.get('phone_num')
         password = request.POST.get('password')
         user_type = request.POST.get('user_type')
 
-        user = authenticate(request, phone_num=phone_num, password=password)
+        try:
+            user = User.objects.get(phone_num=phone_num)
+        except User.DoesNotExist:
+            user = None
 
         if user is not None:
-            if user_type == 'customer' and not user.is_staff:
-                login(request, user)
-                messages.success(request, 'Customer login success!')
-                return redirect('iniyathalaimurai:user_dashboard')
-            elif user_type == 'staff' and user.is_staff:
-                login(request, user)
-                messages.success(request, 'Staff login success!')
-                return redirect('iniyathalaimurai:staff_dashboard')
+            if not user.is_active:
+                messages.error(request, 'User account is deactivated')
             else:
-                messages.error(request, 'User type mismatch.')
+                user = authenticate(request, phone_num=phone_num, password=password)
+                if user:
+                    if user_type == 'customer' and not user.is_staff:
+                        login(request, user)
+                        messages.success(request, 'Customer login success!')
+                        return redirect('iniyathalaimurai:user_dashboard')
+                    elif user_type == 'staff' and user.is_staff:
+                        login(request, user)
+                        messages.success(request, 'Staff login success!')
+                        return redirect('iniyathalaimurai:staff_dashboard')
+                    else:
+                        messages.error(request, 'User type mismatch.')
+                else:
+                    messages.error(request, 'Invalid phone number or password')
         else:
-            messages.error(request, 'Invalid phone number or password.')
+            messages.error(request, 'Invalid phone number or password')
 
     return render(request, 'users/login.html')
+
 
 
 def signup_view(request):
@@ -37,7 +52,7 @@ def signup_view(request):
         user_type = request.POST.get('user_type')
 
         if User.objects.filter(phone_num=phone_num).exists():
-            messages.error(request, 'Phone number already registered.')
+            messages.error(request, 'Phone number already registered')
         else:
             is_staff = True if user_type == 'staff' else False
             user = User.objects.create_user(phone_num=phone_num, name=name, password=password)

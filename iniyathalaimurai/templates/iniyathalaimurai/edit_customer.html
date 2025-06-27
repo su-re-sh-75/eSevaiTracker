@@ -1,0 +1,32 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Edit Customer | Iniya Thalaimurai{% endblock %}
+{% load static %}
+{% block content %}
+<div class="flex justify-center h-3/4 items-center">
+    <div class="w-1/2">
+        <h3 class="text-base-content text-center my-3 text-2xl font-semibold">Edit Customer - {{ customer.name }}</h3>
+        <form class="space-y-4" method="post" action="{% url 'iniyathalaimurai:edit_customer' customer.id %}">
+            {% csrf_token %}
+            <div>
+                <label class="label-text" for="phone_num">Phone Number</label>
+                <input type="text" value="{{ customer.phone_num }}" class="input" id="phone_num" name="phone_num" />
+            </div>
+            <div>
+                <label class="label-text" for="name">Name</label>
+                <input type="text" value="{{ customer.name }}" class="input" id="name" name="name" maxlength="35" />
+            </div>
+            <div>
+                <label class="label-text" for="status">Account Status</label>
+                <select class="select" name="status" id="status">
+                    <option value="active" {% if customer.is_active %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if not customer.is_active %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <button class="btn btn-lg btn-primary btn-gradient btn-block" type="submit">Save Changes</button>
+        </form>
+        <a href="{% url 'iniyathalaimurai:manage_customers' %}" class="link link-animated link-info my-4 p-2 flex justify-center w-max items-center">
+            <span class="icon-[tabler--arrow-badge-left-filled] size-5 mx-2"></span> Back to Customer List
+        </a>
+    </div>
+</div>
+{% endblock %}

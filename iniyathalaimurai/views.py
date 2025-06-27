@@ -1,10 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Application, ServiceCategory, Service, Payment, SubmittedDocument
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime
 from django.contrib import messages
 from django.db import IntegrityError
+from users.models import User
+
 
 @login_required(login_url='/users/login/')
 def new_application(request):
@@ -138,9 +140,104 @@ def user_dashboard(request):
 
 @login_required(login_url="/users/login/")
 def staff_dashboard(request):
-    categories = ServiceCategory.objects.prefetch_related('services')
 
-    context = {
-        'categories': categories,
-    }
-    return render(request, "iniyathalaimurai/staff_dashboard.html", context)
+    return render(request, "iniyathalaimurai/staff_dashboard.html")
+
+
+@login_required(login_url="/users/login/")
+def new_customer(request):
+    if request.method == 'POST':
+        phone_num = request.POST.get('phone_num')
+        password = request.POST.get('password')
+        name = request.POST.get('name')
+
+        if User.objects.filter(phone_num=phone_num).exists():
+            messages.error(request, 'Phone number already registered.')
+        else:
+            user = User.objects.create_user(phone_num=phone_num, name=name, password=password)
+            user.is_staff = False
+            user.save()
+            messages.success(request, f'{user.phone_num} account created successfully!')
+            return redirect('iniyathalaimurai:new_customer')
+    return render(request, 'iniyathalaimurai/new_customer.html')
+
+
+@login_required(login_url="/users/login/")
+def manage_customers(request):
+    customers_list = User.objects.filter(is_staff=False).order_by('-id')
+
+    # customers_list = User.objects.filter(groups__name='Customer').order_by('-id')
+
+    paginator = Paginator(customers_list, 10) 
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = paginator.page(page_number)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
+
+    return render(request, 'iniyathalaimurai/customers.html', {
+        'page_obj': page_obj,
+    })
+
+@login_required(login_url="/users/login/")
+def delete_customer(request, user_id):
+    customer = get_object_or_404(User, id=user_id)
+    customer.delete()
+    messages.success(request, f"Customer '{customer.phone_num}' deleted successfully.")
+    return redirect('iniyathalaimurai:manage_customers')
+
+@login_required(login_url="/users/login/")
+def deactivate_customer(request, user_id):
+    customer = get_object_or_404(User, id=user_id)
+    if customer.is_active:
+        customer.is_active = False
+        customer.save()
+        messages.success(request, f"Customer '{customer.phone_num}' deactivated.")
+    return redirect('iniyathalaimurai:manage_customers')
+
+@login_required(login_url="/users/login/")
+def activate_customer(request, user_id):
+    customer = get_object_or_404(User, id=user_id)
+    if not customer.is_active:
+        customer.is_active = True
+        customer.save()
+        messages.success(request, f"Customer '{customer.phone_num}' activated.")
+    return redirect('iniyathalaimurai:manage_customers')
+
+
+@login_required(login_url="/users/login/")
+def edit_customer(request, user_id):
+    customer = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        phone_num = request.POST.get('phone_num')
+        name = request.POST.get('name')
+        status = request.POST.get('status')
+
+        updated = False
+        if phone_num and phone_num != customer.phone_num:
+            customer.phone_num = phone_num
+            updated = True
+
+        if name and name != customer.name:
+            customer.name = name
+            updated = True
+
+        if status in ['active', 'inactive']:
+            new_status = True if status == 'active' else False
+            if customer.is_active != new_status:
+                customer.is_active = new_status
+                updated = True
+
+        if updated:
+            customer.save()
+            messages.success(request, f'Customer {customer.phone_num} updated successfully!')
+        else:
+            messages.info(request, f'No changes made for {customer.phone_num}')
+
+        return redirect('iniyathalaimurai:manage_customers')
+
+    return render(request, 'iniyathalaimurai/edit_customer.html', {
+        'customer': customer
+    })
