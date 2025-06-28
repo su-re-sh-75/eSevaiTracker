@@ -1,5 +1,97 @@
 {% extends "layouts/dashboard_base.html" %}
 {% block title %}Staff Home | Iniya Thalaimurai{% endblock %}
+{% load static %}
 
-{% block content %}    
+{% block content %}
+<div class="p-5 space-y-6">
+
+    <!-- Top Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="card bg-base-100 shadow-md">
+            <div class="card-body">
+                <p class="text-sm">Total Customers</p>
+                <h2 class="text-xl font-bold">{{ total_customers }}</h2>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-md">
+            <div class="card-body">
+                <p class="text-sm">Total Applications</p>
+                <h2 class="text-xl font-bold">{{ total_applications }}</h2>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-md">
+            <div class="card-body">
+                <p class="text-sm">Total Payments</p>
+                <h2 class="text-xl font-bold">{{ total_payments }}</h2>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-md">
+            <div class="card-body">
+                <p class="text-sm">Revenue Till Now</p>
+                <h2 class="text-xl font-bold">₹ {{ total_revenue }}</h2>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-md">
+            <div class="card-body">
+                <p class="text-sm">Today's Applications</p>
+                <h2 class="text-xl font-bold">{{ todays_applications }}</h2>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-md">
+            <div class="card-body">
+                <p class="text-sm">Pending Certificates</p>
+                <h2 class="text-xl font-bold">{{ pending_certificates }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Applications Table -->
+    <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+            <p class="text-lg font-semibold mb-2">
+                Recent Applications
+                <a href="{% url 'iniyathalaimurai:manage_applications' %}" class="btn btn-sm btn-info max-w-sm">
+                    View all <span class="icon-[tabler--arrow-narrow-right] size-5"></span>
+                </a>
+            </p>
+            <div class="overflow-x-auto">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Applied At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in recent_apps %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ app.customer.name }} <br> {{ app.customer.phone_num }}</td>
+                            <td>{{ app.service.category.name }} - {{ app.service.name }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if app.status == 'processing' %} badge-warning
+                                    {% elif app.status == 'accepted' %} badge-success
+                                    {% elif app.status == 'rejected' %} badge-error
+                                    {% endif %}">
+                                    {{ app.status|capfirst }}
+                                </span>
+                            </td>
+                            <td>{{ app.userAppliedAt|date:"d-m-Y h:i A" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-sm text-gray-500">No recent applications found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

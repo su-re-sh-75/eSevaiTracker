@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Application, ServiceCategory, Service, Payment, SubmittedDocument
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from datetime import datetime
+from datetime import date
 from django.contrib import messages
 from django.db import IntegrityError
 from users.models import User
 from django.views.decorators.http import require_POST
+from django.db.models import Sum
 
 @login_required(login_url='/users/login/')
 def new_application(request):
@@ -139,12 +140,6 @@ def user_dashboard(request):
     return render(request, 'iniyathalaimurai/user_dashboard.html', context)
 
 @login_required(login_url="/users/login/")
-def staff_dashboard(request):
-
-    return render(request, "iniyathalaimurai/staff_dashboard.html")
-
-
-@login_required(login_url="/users/login/")
 def new_customer(request):
     if request.method == 'POST':
         phone_num = request.POST.get('phone_num')
@@ -165,8 +160,6 @@ def new_customer(request):
 @login_required(login_url="/users/login/")
 def manage_customers(request):
     customers_list = User.objects.filter(is_staff=False).order_by('-id')
-
-    # customers_list = User.objects.filter(groups__name='Customer').order_by('-id')
 
     paginator = Paginator(customers_list, 10) 
     page_number = request.GET.get('page')
@@ -327,3 +320,28 @@ def update_acknowledgement(request, app_id):
         messages.success(request, 'Acknowledgement Number updated!')
 
     return redirect('iniyathalaimurai:manage_applications')
+
+
+@login_required(login_url='/users/login/')
+def staff_dashboard(request):
+    total_customers = User.objects.filter(is_staff=False).count()
+    total_applications = Application.objects.count()
+    total_payments = Payment.objects.count()
+    total_revenue = Payment.objects.filter(status='accepted').aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+    today = date.today()
+    todays_applications = Application.objects.filter(userAppliedAt__date=today).count()
+    pending_certificates = Application.objects.filter(status='accepted', certificate__isnull=True).count()
+    recent_apps = Application.objects.select_related('customer', 'service', 'service__category').order_by('-userAppliedAt')[:10]
+
+    context = {
+        'total_customers': total_customers,
+        'total_applications': total_applications,
+        'total_payments': total_payments,
+        'total_revenue': total_revenue,
+        'todays_applications': todays_applications,
+        'pending_certificates': pending_certificates,
+        'recent_apps': recent_apps,
+    }
+    return render(request, 'iniyathalaimurai/staff_dashboard.html', context)
