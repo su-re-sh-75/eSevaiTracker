@@ -39,14 +39,14 @@
                 </ul>
             </li>
             <li>
-                <a href="{% url 'iniyathalaimurai:user_applications' %}" class="{% if path == '/applications/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
+                <a href="{% url 'iniyathalaimurai:manage_applications' %}" class="{% if path == '/applications/manage/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
                 <span class="icon-[tabler--file-check] size-5"></span>
                     Manage Applications
                 </a>
             </li>
             <li>
-                <a href="{% url 'iniyathalaimurai:user_payments' %}" class="{% if path == '/payments/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
-                <span class="icon-[tabler--currency-rupee] size-5"></span>
+                <a href="{% url 'iniyathalaimurai:manage_payments' %}" class="{% if path == '/payments/manage/' %} text-bg-soft-primary {% endif %} hover:text-bg-soft-primary">
+                    <span class="icon-[tabler--receipt-rupee-filled] size-5"></span>
                     Manage Payments
                 </a>
             </li>

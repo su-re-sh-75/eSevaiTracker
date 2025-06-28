@@ -1,0 +1,122 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Manage Applications | Iniya Thalaimurai{% endblock %}
+{% load static %}
+{% block content %}
+<!-- All Applications of this user -->
+    <div class="text-base-content p-5 text-left text-lg font-semibold rtl:text-right">
+        <p>Manage Applications</p>
+    </div>
+    <!-- Table Container -->
+    <div class="w-full rounded-lg pb-2 shadow-md">
+        <div class="overflow-x-auto">
+            <table class="table table-striped">
+                <thead>
+                <tr class="text-center *:px-1">
+                    <th>#</th>
+                    <th>Acknowledgement <br> Number</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Certificate</th>
+                    <th>Applied At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in page_obj %}
+                <tr>
+                    <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                    <td class="text-center">
+                        <form method="POST" action="{% url 'iniyathalaimurai:update_acknowledgement' app.id %}" class="flex items-center gap-1 justify-center ack-form">
+                            {% csrf_token %}
+                            <div class="join max-w-sm">
+                                <input class="input bg-transparent input-sm join-item text-center focus:outline-none border-none" type="text" name="acknowledgementNumber" value="{{ app.acknowledgementNumber|default:'-' }}" oninput="showSaveBtn(this)"/>
+                                <button type="submit" class="btn btn-sm btn-success btn-outline join-item">Save</button>
+                            </div>
+                        </form>
+                    </td>
+                    <td>{{ app.customer.name }} <br> {{ app.customer.phone_num }}</td>
+                    <td>{{ app.service.category.name }} - {{ app.service.name }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'iniyathalaimurai:update_application_status' app.id %}">
+                            {% csrf_token %}
+                            <select name="status" onchange="this.form.submit()" class="select select-sm w-fit">
+                                <option value="processing" {% if app.status == 'processing' %}selected{% endif %}>Processing</option>
+                                <option value="accepted" {% if app.status == 'accepted' %}selected{% endif %}>Accepted</option>
+                                <option value="rejected" {% if app.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td>{{ app.payment.amount }}</td>
+                    <td class="flex items-center gap-2">
+                        {% if app.certificate %}
+                            <a href="{{ app.certificate.url }}" class="btn btn-sm btn-info text-white" target="_blank">View</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                        <form method="POST" action="{% url 'iniyathalaimurai:upload_certificate' app.id %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="file" name="certificate" id="fileInput{{ app.id }}" class="hidden" onchange="this.form.submit()">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('fileInput{{ app.id }}').click();">
+                                Upload
+                            </button>
+                        </form>
+                    </td>
+                    <td>{{ app.userAppliedAt|date:"d-m-Y h:i A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-sm text-gray-500">No applications found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+{% block script %}
+<script>
+    function showSaveBtn(input) {
+        const form = input.closest('form.ack-form');
+        if (!form) return;
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        // Save original value on first input
+        if (!input.hasAttribute('data-original-value')) {
+            input.setAttribute('data-original-value', input.value);
+        }
+
+        btn.classList.remove('hidden');
+
+        clearTimeout(form.hideTimeout);
+        form.hideTimeout = setTimeout(() => {
+            hideAndMaybeReload(input, btn);
+        }, 3000);
+    }
+
+    function hideAndMaybeReload(input, btn) {
+        const originalValue = input.getAttribute('data-original-value');
+        const currentValue = input.value.trim();
+
+        btn.classList.add('hidden');
+
+        if (currentValue === "" || currentValue === originalValue.trim()) {
+            location.reload();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form.ack-form button[type="submit"]').forEach(btn => {
+            btn.classList.add('hidden');
+        });
+
+        document.querySelectorAll('form.ack-form input[name="acknowledgementNumber"]').forEach(input => {
+            input.addEventListener('blur', function() {
+                const btn = this.closest('form.ack-form').querySelector('button[type="submit"]');
+                hideAndMaybeReload(this, btn);
+            });
+        });
+    });
+</script>
+{% endblock %}

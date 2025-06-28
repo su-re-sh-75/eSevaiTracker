@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 
 def validate_filetype(value):
-    valid_mimetypes = ['image/jpeg', 'image/png', 'application/pdf']
+    valid_mimetypes = ['image/jpeg', 'image/png', 'application/pdf', 'image/webp']
     if value.content_type not in valid_mimetypes:
         raise ValidationError('Only JPG, PNG, and PDF files are allowed.')
 

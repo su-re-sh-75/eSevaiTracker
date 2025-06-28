@@ -1,0 +1,142 @@
+{% extends "layouts/dashboard_base.html" %}
+{% block title %}Manage Payments | Iniya Thalaimurai{% endblock %}
+{% load static %}
+{% block content %}
+<!-- All Applications of this user -->
+    <div class="text-base-content p-5 text-left text-lg font-semibold rtl:text-right">
+        <p>Manage Payments</p>
+    </div>
+
+    <!-- Table Container -->
+    <div class="w-full rounded-lg pb-2 shadow-md">
+        <div class="overflow-x-auto">
+            <table class="table table-striped">
+                <thead>
+                    <tr class="text-center">
+                        <th>#</th>
+                        <th>Transaction ID</th>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Paid At</th>
+                        <th>Screenshot</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in page_obj %}
+                        <tr>
+                            <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                            <td>{{ payment.transactionID }}</td>
+                            <td>{{ payment.customer.name }} <br> {{ payment.customer.phone_num }}</td>
+                            <td>{{ payment.service.category.name }} - {{ payment.service.name }}</td>
+                            <td>{{ payment.amount }}</td>
+                            <td>
+                                <form method="POST" action="{% url 'iniyathalaimurai:update_payment_status' payment.id %}">
+                                    {% csrf_token %}
+                                    <select name="status" onchange="this.form.submit()" class="select select-sm max-w-sm">
+                                        <option value="verifying" {% if payment.status == 'verifying' %}selected{% endif %}>Verifying</option>
+                                        <option value="accepted" {% if payment.status == 'accepted' %}selected{% endif %}>Accepted</option>
+                                        <option value="rejected" {% if payment.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td>
+                                {{ payment.paidAt|date:"d-m-Y" }}
+                                {{ payment.paidAt|time:"h:i A" }}
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-primary open-screenshot-modal" data-transaction-id="{{payment.transactionID}}" data-screenshot-url="{{ payment.screenshot.url }}" aria-haspopup="dialog" aria-expanded="false" aria-controls="screenshot-modal" data-overlay="#screenshot-modal" >
+                                    <span class="icon-[tabler--eye] size-5"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-sm text-gray-500 py-6">No payments found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="mt-6 flex justify-center items-center flex-wrap gap-4">
+
+        <!-- Prev button -->
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" type="button" class="btn btn-text max-sm:btn-square hover:text-bg-soft-primary">
+            <span class="icon-[tabler--chevron-left] size-5 rtl:rotate-180"></span>
+            <span class="hidden sm:inline">Previous</span>
+        </a>
+        {% else %}
+        <span class="btn btn-text max-sm:btn-square btn-disabled">
+            <span class="icon-[tabler--chevron-left] size-5 rtl:rotate-180"></span>
+            <span class="hidden sm:inline">Previous</span>
+        </span>
+        {% endif %}
+        
+        <div class="flex items-center gap-x-1">
+            {% for page_num in page_obj.paginator.page_range %}
+                {% if page_num >= page_obj.number|add:'-2' and page_num <= page_obj.number|add:'2' %}
+                    <a href="?page={{ page_num }}"
+                        class="btn btn-soft btn-square aria-[current='page']:text-bg-soft-primary"  {% if page_obj.number == page_num %} aria-current="page" {% endif %}>
+                        {{ page_num }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Next button -->
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" type="button" class="btn btn-text hover:text-bg-soft-primary max-sm:btn-square">
+                <span class="hidden sm:inline">Next</span>
+                <span class="icon-[tabler--chevron-right] size-5 rtl:rotate-180"></span>
+            </a>
+        {% else %}
+            <span class="btn btn-text max-sm:btn-square btn-disabled pointer-events-none">
+                <span class="hidden sm:inline">Next</span>
+                <span class="icon-[tabler--chevron-right] size-5 rtl:rotate-180"></span>
+            </span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Modal for viewing screenshot -->
+    <div id="screenshot-modal" class="overlay modal overlay-open:opacity-100 hidden overlay-open:duration-300" role="dialog" tabindex="-1">
+        <div class="modal-dialog overlay-open:opacity-100 overlay-open:duration-300">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Payment Screenshot</h3>
+                    <button type="button" class="btn btn-text btn-circle btn-sm absolute end-3 top-3" aria-label="Close" data-overlay="#screenshot-modal" >
+                        <span class="icon-[tabler--x] size-4"></span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <img id="modal-screenshot-img" src="" alt="Payment Screenshot">
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalImg = document.getElementById('modal-screenshot-img');
+        const modalTitle = document.querySelector('.modal-title');
+        const screenshotButtons = document.querySelectorAll('.open-screenshot-modal');
+
+        screenshotButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const imgUrl = this.getAttribute('data-screenshot-url');
+                const transactionID = this.getAttribute('data-transaction-id');
+                modalTitle.textContent = `Payment Screenshot for Transaction-${transactionID}`;
+                modalImg.setAttribute('src', imgUrl);
+            });
+        });
+    });
+</script>
+
+{% endblock %}

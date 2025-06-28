@@ -12,12 +12,14 @@
         <div class="overflow-x-auto">
             <table class="table table-striped">
                 <thead>
-                    <th>#</th>
-                    <th>Transcation ID</th>
-                    <th>Service name</th>
-                    <th>Status</th>
-                    <th>Amount</th>
-                    <th>Paid At</th>
+                    <tr>
+                        <th>#</th>
+                        <th>Transcation ID</th>
+                        <th>Service name</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Paid At</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for payment in page_obj %}

@@ -6,7 +6,7 @@ from datetime import datetime
 from django.contrib import messages
 from django.db import IntegrityError
 from users.models import User
-
+from django.views.decorators.http import require_POST
 
 @login_required(login_url='/users/login/')
 def new_application(request):
@@ -241,3 +241,89 @@ def edit_customer(request, user_id):
     return render(request, 'iniyathalaimurai/edit_customer.html', {
         'customer': customer
     })
+
+@login_required(login_url='/users/login/')
+def manage_payments(request):
+    payments_list = Payment.objects.select_related('customer', 'service', 'service__category').order_by('-paidAt')
+
+    paginator = Paginator(payments_list, 10)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = paginator.page(page_number)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
+
+    return render(request, 'iniyathalaimurai/manage_payments.html', {
+        'page_obj': page_obj
+    })
+
+@require_POST
+@login_required(login_url='/users/login/')
+def update_payment_status(request, payment_id):
+    payment = get_object_or_404(Payment, id=payment_id)
+    new_status = request.POST.get('status')
+
+    if new_status in dict(Payment.STATUS_CHOICES):
+        payment.status = new_status
+        payment.save()
+        messages.success(request, f'Payment #{payment.transactionID} status updated to {new_status}.')
+    else:
+        messages.error(request, 'Invalid status.')
+
+    return redirect('iniyathalaimurai:manage_payments')
+
+@login_required(login_url='/users/login/')
+def manage_applications(request):
+    applications = Application.objects.select_related('customer', 'service', 'service__category').order_by('-userAppliedAt')
+
+    paginator = Paginator(applications, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'iniyathalaimurai/manage_applications.html', {
+        'page_obj': page_obj
+    })
+
+@login_required(login_url='/users/login/')
+def upload_certificate(request, app_id):
+    application = get_object_or_404(Application, id=app_id)
+
+    if request.method == 'POST' and request.FILES.get('certificate'):
+        application.certificate = request.FILES['certificate']
+        application.save()
+        messages.success(request, f'{application.customer.phone_num}\'s Certificate uploaded successfully.')
+        return redirect('iniyathalaimurai:manage_applications')
+
+    return render(request, 'iniyathalaimurai/upload_certificate.html', {
+        'application': application
+    })
+
+@require_POST
+@login_required(login_url='/users/login/')
+def update_application_status(request, app_id):
+    application = get_object_or_404(Application, id=app_id)
+    new_status = request.POST.get('status')
+
+    allowed_statuses = ['processing', 'accepted', 'rejected']
+
+    if new_status in allowed_statuses:
+        application.status = new_status
+        application.save()
+        messages.success(request, f'Application #{application.id} status updated to {new_status}.')
+    else:
+        messages.error(request, 'Invalid status selected.')
+
+    return redirect('iniyathalaimurai:manage_applications')
+
+@login_required(login_url='/users/login/')
+def update_acknowledgement(request, app_id):
+    application = get_object_or_404(Application, id=app_id)
+
+    if request.method == 'POST':
+        new_ack = request.POST.get('acknowledgementNumber', '').strip()
+        application.acknowledgementNumber = new_ack
+        application.save()
+        messages.success(request, 'Acknowledgement Number updated!')
+
+    return redirect('iniyathalaimurai:manage_applications')
